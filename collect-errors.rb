@@ -4,26 +4,19 @@ require 'shellwords'
 require 'json'
 
 class SiteMap
-  def get_amp_entry_uris sitemap_index_uri
-    get_entry_uris(sitemap_index_uri).map{|uri|
-      amp_uri uri
-    }.compact
-  end
+  def uris sitemap_uri
+    Enumerator.new{ |yielder|
+      index = Nokogiri get sitemap_uri
+      index.search('loc').each{|loc|
+        page = Nokogiri get loc.content
+        page.search('url').each{|item|
 
-  def get_entry_uris sitemap_index_uri
-    uris = []
-    index = Nokogiri get sitemap_index_uri
-    index.search('loc').each{|loc|
-      page = Nokogiri get loc.content
-      page.search('url').each{|item|
+          uri = item.at('loc').content
 
-        uri = item.at('loc').content
-
-        uris.push uri
-        return uris if uris.length > 3
+          yielder << uri
+        }
       }
     }
-    uris
   end
 
   def amp_uri html_uri
@@ -33,7 +26,10 @@ class SiteMap
     link.attr('href')
   end
 
+  protected
+
   def get uri
+    warn "get #{uri}"
     RestClient.get(uri, :user_agent => "sketch-amp-checker")
   end
 end
@@ -89,11 +85,13 @@ validator = AmpValidator.new
 SITEMAP_URI = ARGV.first
 
 reporter.header SITEMAP_URI
-p sitemap.get_amp_entry_uris(SITEMAP_URI)
-sitemap.get_amp_entry_uris(SITEMAP_URI).each{|uri|
-  warn uri
-  result = validator.validate uri
+total = 0
+sitemap.uris(SITEMAP_URI).each{|uri|
+  amp_uri = sitemap.amp_uri uri
+  next unless amp_uri
+  result = validator.validate amp_uri
   reporter.report result
+  total += 1
 }
 
 reporter.summary
