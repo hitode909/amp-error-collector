@@ -65,17 +65,22 @@ class Reporter
       @success += 1
     else
       LOG.info "failed"
+      LOG.debug result.inspect
       if @fail == 0
         puts "\n# Errors"
       end
       @fail += 1
       puts "- #{uri}"
-      result['errors'].each{|error|
-        line = error['line']
-        char = error['char']
-        reason = error['reason']
-        puts " - `#{line}:#{char}` #{reason}"
-      }
+      if result['errors'].length > 0
+        result['errors'].each{|error|
+          line = error['line']
+          char = error['char']
+          reason = error['reason']
+          puts " - `#{line}:#{char}` #{reason}"
+        }
+      else
+        puts " - Doesn't seem to be an AMP page"
+      end
     end
   end
 
@@ -84,7 +89,7 @@ class Reporter
     if @total > 0
       puts "#{@success} / #{@total} = #{(@success.to_f/@total*100).to_i}% success"
     else
-      puts "AMP not found"
+      puts "AMP pages not found"
     end
   end
 
