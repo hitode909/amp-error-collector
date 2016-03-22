@@ -16,14 +16,14 @@ class SiteMap
   def uris sitemap_uri
     Enumerator.new{ |yielder|
       index = Nokogiri get sitemap_uri
-      index.search('loc').each{|loc|
-        page = Nokogiri get loc.content
-        page.search('url').each{|item|
-
-          uri = item.at('loc').content
-
+      index.search('sitemap loc').each{|loc|
+        uris(loc.content).each {|uri|
           yielder << uri
         }
+      }
+      index.search('url loc').each{|loc|
+        uri = loc.content
+        yielder << uri
       }
     }
   end
