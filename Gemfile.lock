@@ -10,6 +10,7 @@ GEM
     netrc (0.11.0)
     nokogiri (1.6.7.2)
       mini_portile2 (~> 2.0.0.rc2)
+    parallel (1.6.2)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -24,6 +25,7 @@ PLATFORMS
 
 DEPENDENCIES
   nokogiri
+  parallel
   rest-client
   retryable
 

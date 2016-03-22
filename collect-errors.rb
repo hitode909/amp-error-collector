@@ -112,7 +112,7 @@ SITEMAP_URI = ARGV.first
 
 reporter.header SITEMAP_URI
 total = 0
-sitemap.uris(SITEMAP_URI).each{|uri|
+Parallel.each(sitemap.uris(SITEMAP_URI), :in_threads => Parallel.processor_count*2) { |uri|
   amp_uri = sitemap.amp_uri uri
   next unless amp_uri
   result = validator.validate amp_uri
