@@ -58,7 +58,7 @@ class Reporter
     puts sitemap_uri
   end
 
-  def report(result)
+  def report(uri, result)
     @total += 1
     if result['success']
       LOG.info "success"
@@ -105,7 +105,7 @@ sitemap.uris(SITEMAP_URI).each{|uri|
   amp_uri = sitemap.amp_uri uri
   next unless amp_uri
   result = validator.validate amp_uri
-  reporter.report result
+  reporter.report amp_uri, result
   total += 1
 }
 
