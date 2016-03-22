@@ -98,7 +98,9 @@ end
 class AmpValidator
   def validate uri
     LOG.info "validate #{uri}"
-    JSON.parse(`AMP_VALIDATOR_TIMEOUT=60000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
+    Retryable.retryable(tries: 10, on: JSON::ParserError) do
+      JSON.parse(`AMP_VALIDATOR_TIMEOUT=60000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
+    end
   end
 end
 
