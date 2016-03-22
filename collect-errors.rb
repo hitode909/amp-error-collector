@@ -2,6 +2,15 @@ Bundler.require
 
 require 'shellwords'
 require 'json'
+require 'logger'
+
+LOG = Logger.new(STDERR)
+
+if ENV['AMP_ERROR_COLLECTOR_DEBUG']
+  LOG.level = Logger::DEBUG
+else
+  LOG.level = Logger::INFO
+end
 
 class SiteMap
   def uris sitemap_uri
@@ -20,16 +29,20 @@ class SiteMap
   end
 
   def amp_uri html_uri
+    LOG.debug "get AMP uri for #{html_uri}"
     doc = Nokogiri get html_uri
     link = doc.at('link[rel="amphtml"]')
     return unless link
-    link.attr('href')
+    href = link.attr('href')
+    return unless href
+    LOG.debug "found #{href}"
+    href
   end
 
   protected
 
   def get uri
-    warn "get #{uri}"
+    LOG.debug "get #{uri}"
     RestClient.get(uri, :user_agent => "sketch-amp-checker")
   end
 end
@@ -48,9 +61,10 @@ class Reporter
   def report(result)
     @total += 1
     if result['success']
-      warn 'OK'
+      LOG.info "success"
       @success += 1
     else
+      LOG.info "failed"
       if @fail == 0
         puts "\n# Errors"
       end
@@ -74,6 +88,7 @@ end
 
 class AmpValidator
   def validate uri
+    LOG.info "validate #{uri}"
     JSON.parse(`AMP_VALIDATOR_TIMEOUT=60000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
   end
 end
