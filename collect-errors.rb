@@ -81,7 +81,11 @@ class Reporter
 
   def summary
     puts "\n# Result"
-    puts "#{@success} / #{@total} = #{(@success.to_f/@total*100).to_i}% success"
+    if @total > 0
+      puts "#{@success} / #{@total} = #{(@success.to_f/@total*100).to_i}% success"
+    else
+      puts "AMP not found"
+    end
   end
 
 end
