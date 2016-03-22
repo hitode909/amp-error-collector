@@ -1,6 +1,6 @@
 # AMP Error Collector
 
-Crawl AMP pages from sitemap.xml, report errors as Markdown.
+Crawl AMP pages from sitemap.xml and report errors.
 
 ```
 bundle install
