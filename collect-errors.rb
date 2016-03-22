@@ -55,7 +55,7 @@ class Reporter
   end
 
   def header(sitemap_uri)
-    puts sitemap_uri
+    puts "Error Report of #{sitemap_uri}"
   end
 
   def report(uri, result)
