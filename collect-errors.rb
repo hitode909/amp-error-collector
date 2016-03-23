@@ -98,8 +98,8 @@ end
 class AmpValidator
   def validate uri
     LOG.info "validate #{uri}"
-    Retryable.retryable(tries: 10) do
-      result = JSON.parse(`AMP_VALIDATOR_TIMEOUT=60000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
+    Retryable.retryable(tries: 5, on: [RuntimeError, JSON::ParserError], sleep: 5, exception_cb: Proc.new { LOG.info "retry #{uri}" }) do
+      result = JSON.parse(`AMP_VALIDATOR_TIMEOUT=100000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
       if !result['success'] && result['errors'].length == 0
         raise 'looks network problem'
       end
@@ -116,7 +116,7 @@ SITEMAP_URI = ARGV.first
 
 reporter.header SITEMAP_URI
 total = 0
-Parallel.each(sitemap.uris(SITEMAP_URI), :in_threads => Parallel.processor_count*2) { |uri|
+Parallel.each(sitemap.uris(SITEMAP_URI), :in_threads => Parallel.processor_count) { |uri|
   amp_uri = sitemap.amp_uri uri
   next unless amp_uri
   result = validator.validate amp_uri
