@@ -98,8 +98,8 @@ end
 class AmpValidator
   def validate uri
     LOG.info "validate #{uri}"
-    Retryable.retryable(tries: 10, on: Exception) do
-      result = JSON.parse(`AMP_VALIDATOR_TIMEOUT=100000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
+    Retryable.retryable(tries: 10) do
+      result = JSON.parse(`AMP_VALIDATOR_TIMEOUT=60000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
       if !result['success'] && result['errors'].length == 0
         raise 'looks network problem'
       end
