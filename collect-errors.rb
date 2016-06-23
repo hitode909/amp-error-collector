@@ -1,8 +1,8 @@
 Bundler.require
 
 require 'shellwords'
-require 'json'
 require 'logger'
+require "open3"
 
 LOG = Logger.new(STDERR)
 
@@ -104,12 +104,31 @@ end
 class AmpValidator
   def validate uri
     LOG.info "validate #{uri}"
-    Retryable.retryable(tries: 5, on: [RuntimeError, JSON::ParserError], sleep: 5, exception_cb: Proc.new { LOG.info "retry #{uri}" }) do
-      result = JSON.parse(`AMP_VALIDATOR_TIMEOUT=100000 node_modules/.bin/amp-validator -o json #{Shellwords.escape uri}`)[uri]
-      if !result['success'] && result['errors'].length == 0
-        raise 'looks network problem'
+    Retryable.retryable(tries: 5, on: [RuntimeError], sleep: 5, exception_cb: Proc.new { LOG.info "retry #{uri}" }) do
+      output, status = Open3.capture2e('amphtml/validator/index.js', uri)
+      if status.success?
+        {
+          'success' => true,
+          'errors' => [],
+        }
+      else
+        errors = output.each_line.map{|line|
+          captures = line.match(/\A\S+:(\d+):(\d+) (.+)\Z/)
+          unless captures
+            LOG.warn "capture failed: #{line}"
+            next
+          end
+          {
+            'line' => captures[1],
+            'char' => captures[2],
+            'reason' => captures[3],
+          }
+        }.compact
+        {
+          'success' => false,
+          'errors' => errors,
+        }
       end
-      result
     end
   end
 end
