@@ -8,6 +8,10 @@ npm install
 bundle exec -- ruby collect-errors.rb SITEMAP_XMP_URI | tee a.md
 ```
 
+Example output:
+
+- https://gist.github.com/hitode909/0872cb73c5da2aaf37838f50bf7ec599
+
 # debug
 
 ```
