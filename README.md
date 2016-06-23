@@ -3,8 +3,7 @@
 Crawl AMP pages from sitemap.xml and report errors.
 
 ```
-bundle install
-npm install
+./setup.sh
 bundle exec -- ruby collect-errors.rb SITEMAP_XMP_URI | tee a.md
 ```
 
